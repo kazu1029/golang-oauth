@@ -2,7 +2,6 @@ package controllersGoogle
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -10,16 +9,12 @@ import (
 	v2 "google.golang.org/api/oauth2/v2"
 )
 
-type CallbackHandler struct {
-	gin.Context
-}
-
 type CallbackRequest struct {
 	Code  string `form:"code"`
 	State string `form:"state"`
 }
 
-func (c *CallbackHandler) Get() {
+func Callback(c *gin.Context) {
 	request := CallbackRequest{}
 	ctx := context.Background()
 	if err := c.Bind(&request); err != nil {
@@ -40,6 +35,5 @@ func (c *CallbackHandler) Get() {
 	service, _ := v2.New(config.Client(ctx, tok))
 	tokenInfo, _ := service.Tokeninfo().AccessToken(tok.AccessToken).Context(ctx).Do()
 
-	fmt.Printf("email is %+v\n", tokenInfo.Email)
-	fmt.Printf("UserId is %+v\n", tokenInfo.UserId)
+	c.JSON(200, tokenInfo)
 }

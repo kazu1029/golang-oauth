@@ -1,16 +1,13 @@
 package google
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/kelseyhightower/envconfig"
 	"golang.org/x/oauth2"
 )
 
 type GoogleConfig struct {
-	ClientID     string
-	ClientSecret string
+	ClientID     string `envconfig:"GOOGLE_CLIENT_ID"`
+	ClientSecret string `envconfig:"GOOGLE_CLIENT_SECRET"`
 }
 
 const (
@@ -20,13 +17,11 @@ const (
 
 func GetConnect() *oauth2.Config {
 	var googleConfig GoogleConfig
-	envconfig.Process("google", &googleConfig)
+	envconfig.Process("GOOGLE", &googleConfig)
 
-	fmt.Printf("googleConfig is %+v\n", googleConfig)
-	fmt.Println(os.Getenv("GOOGLE_CLIENT_ID"))
 	config := &oauth2.Config{
-		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
-		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
+		ClientID:     googleConfig.ClientID,
+		ClientSecret: googleConfig.ClientSecret,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  authorizeEndpoint,
 			TokenURL: tokenEndpoint,
