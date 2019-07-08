@@ -19,7 +19,7 @@ func New() http.Handler {
 	// })
 
 	 r.GET("/auth/google/oauth2", controllersGoogle.GoogleOauth2Handler)
-	 r.GET("auth/gogle/oauth2_2", func(c *gin.Context) { &controllersGoogle.Oauth2Interface(c) })
+	 r.GET("auth/google/oauth2_2", func(c controllersGoogle.Oauth2Interface) { &controllersGoogle.Oauth2Interface(c) })
 	// r.GET("/auth/google/callback", &controllersGoogle.CallbackHandler{})
 
 	return r

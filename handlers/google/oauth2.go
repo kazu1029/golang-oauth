@@ -8,21 +8,21 @@ import (
 )
 
 type Oauth2Handler struct {
-	Context *gin.Context
+	Ctx *gin.Context
 }
 
 type Oauth2Interface interface {
 	Get()
 }
 
-func (c *gin.Context) Get() {
+func (c *Oauth2Handler) Get() {
 	config := google.GetConnect()
 	url := config.AuthCodeURL("")
-	c.Redirect(http.StatusMovedPermanently, url)
+	c.Ctx.Redirect(http.StatusMovedPermanently, url)
 }
 
-func GoogleOauth2Handler(c *gin.Context) {
+func GoogleOauth2Handler(c Oauth2Handler) {
 	config := google.GetConnect()
 	url := config.AuthCodeURL("")
-	c.Redirect(http.StatusMovedPermanently, url)
+	c.Ctx.Redirect(http.StatusMovedPermanently, url)
 }
