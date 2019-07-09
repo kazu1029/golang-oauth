@@ -14,7 +14,7 @@ func GenerateStateOauthCookie(c *gin.Context) string {
 	b := make([]byte, 16)
 	rand.Read(b)
 	state := base64.URLEncoding.EncodeToString(b)
-	c.SetCookie("oauthstate", state, expiration, "/", "google.com", true, true)
+	c.SetCookie("oauthstate", state, expiration, "/", "google.com", true, false)
 	cookie, _ := c.Request.Cookie("oauthstate")
 	fmt.Printf("cookie is %v\n", cookie)
 

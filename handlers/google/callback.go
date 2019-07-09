@@ -3,13 +3,12 @@ package controllersGoogle
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kazu1029/golang-oauth/lib/google"
-	// v2 "google.golang.org/api/oauth2/v2"
+	v2 "google.golang.org/api/oauth2/v2"
 )
 
 type CallbackRequest struct {
@@ -17,7 +16,11 @@ type CallbackRequest struct {
 	State string `form:"state"`
 }
 
-const oauthGoogleUrlAPI = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
+type UserData struct {
+	AccessToken string
+	Email       string
+	UserId      string
+}
 
 func Callback(c *gin.Context) {
 	oauthState, _ := c.Cookie("oauthstate")
@@ -26,14 +29,13 @@ func Callback(c *gin.Context) {
 		log.Println(err)
 	}
 	fmt.Printf("oauthState is %v\n", oauthState)
+	// if request.State != oauthState {
+	// 	log.Println("invalid oauth google state")
+	// 	c.Redirect(http.StatusMovedPermanently, "/")
+	// 	return
+	// }
 
-	if request.State != oauthState {
-		log.Println("invalid oauth google state")
-		c.Redirect(http.StatusMovedPermanently, "/")
-		return
-	}
-
-	data, err := GetUserDataFromGoogle(request.Code)
+	data, err := GetUserDataFromGoogle(request.Code, c)
 	if err != nil {
 		log.Println(err.Error())
 		c.Redirect(http.StatusMovedPermanently, "/")
@@ -41,43 +43,29 @@ func Callback(c *gin.Context) {
 	}
 
 	c.JSON(200, data)
-	// request := CallbackRequest{}
-	// ctx := context.Background()
-	// if err := c.Bind(&request); err != nil {
-	// 	log.Println(err)
-	// }
-
-	// config := google.GetConnect()
-
-	// tok, err := config.Exchange(ctx, request.Code)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-
-	// if tok.Valid() == false {
-	// 	log.Println("Invalid Token")
-	// }
-
-	// service, _ := v2.New(config.Client(ctx, tok))
-	// tokenInfo, _ := service.Tokeninfo().AccessToken(tok.AccessToken).Context(ctx).Do()
-
-	// c.JSON(200, tokenInfo)
 }
 
-func GetUserDataFromGoogle(code string) ([]byte, error) {
+func GetUserDataFromGoogle(code string, c *gin.Context) (UserData, error) {
+	ctx := context.Background()
 	config := google.GetConnect()
-	token, err := config.Exchange(context.Background(), code)
+
+	tok, err := config.Exchange(ctx, code)
 	if err != nil {
-		return nil, fmt.Errorf("code exchange wronge: %s", err.Error())
+		log.Println(err)
 	}
-	response, err := http.Get(oauthGoogleUrlAPI + token.AccessToken)
-	if err != nil {
-		return nil, fmt.Errorf("failed getting user info: %s", err.Error())
+
+	if tok.Valid() == false {
+		log.Println("Invalid Token")
 	}
-	defer response.Body.Close()
-	contents, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed read response: %s", err.Error())
+
+	service, _ := v2.New(config.Client(ctx, tok))
+	tokenInfo, _ := service.Tokeninfo().AccessToken(tok.AccessToken).Context(ctx).Do()
+
+	data := UserData{
+		AccessToken: tok.AccessToken,
+		Email:       tokenInfo.Email,
+		UserId:      tokenInfo.UserId,
 	}
-	return contents, nil
+
+	return data, nil
 }
