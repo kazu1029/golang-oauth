@@ -35,7 +35,7 @@ func Callback(c *gin.Context) {
 	// 	return
 	// }
 
-	data, err := GetUserDataFromGoogle(request.Code, c)
+	data, err := GetUserDataFromGoogle(c, request.Code)
 	if err != nil {
 		log.Println(err.Error())
 		c.Redirect(http.StatusMovedPermanently, "/")
@@ -45,7 +45,7 @@ func Callback(c *gin.Context) {
 	c.JSON(200, data)
 }
 
-func GetUserDataFromGoogle(code string, c *gin.Context) (UserData, error) {
+func GetUserDataFromGoogle(c *gin.Context, code string) (UserData, error) {
 	ctx := context.Background()
 	config := google.GetConnect()
 
