@@ -2,15 +2,18 @@ package handlers
 
 import (
 	"net/http"
+
+	"github.com/gin-contrib/static"
+	"github.com/gin-gonic/gin"
+	"github.com/kazu1029/golang-oauth/handlers/google"
 )
 
 func New() http.Handler {
-	mux := http.NewServeMux()
+	r := gin.Default()
+	r.Use(static.Serve("/", static.LocalFile("templates", false)))
 
-	mux.Handle("/", http.FileServer(http.Dir("templates/")))
+	r.GET("/auth/google/login", controllersGoogle.Oauth2Handler)
+	r.GET("/auth/google/callback", controllersGoogle.Callback)
 
-	mux.HandleFunc("/auth/google/login", oauthGoogleLogin)
-	mux.HandleFunc("/auth/google/callback", oauthGoogleCallback)
-
-	return mux
+	return r
 }
